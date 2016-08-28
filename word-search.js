@@ -1,10 +1,21 @@
 #!/usr/bin/env node
 
-// console.log("hey");
-
 const { createReadStream } = require('fs')
-const transformer = require('./limit-ten.js')
+const readStream = createReadStream('/usr/share/dict/words')
+const { split, map } = require('event-stream')
+const transformer = require ('./limit-ten')
 
-createReadStream(???)
-  .pipe('transformer')
+let [,,...arg] = process.argv
+
+readStream
+  .pipe(split())
+  .pipe(map((data,cb) => {
+    let wordLowerCase = data.toString().toLowerCase() + '\n'
+      if (wordLowerCase.startsWith(arg[0])) {
+        cb(null, data + '\n')
+      }
+      cb()
+  }))
+
+  .pipe(transformer)
   .pipe(process.stdout)
